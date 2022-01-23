@@ -36,19 +36,16 @@ let read_obj obj_data =
       face_lines
   in
 
-  let normals =
-    List.fold_left
-      (fun normals (v1, v2, v3) ->
-        let v1_coords = Array.get vertices v1 in
-        let e1 = vec3_sub (Array.get vertices v2) v1_coords in
-        let e2 = vec3_sub (Array.get vertices v3) v1_coords in
-        let n = vec3_cross e1 e2 in
-        Array.mapi
-          (fun i v -> if i = v1 || i = v2 || i = v3 then vec3_add n v else v)
-          normals)
-      (Array.make (Array.length vertices) (0.0, 0.0, 0.0))
-      faces
-  in
+  let normals = Array.make (Array.length vertices) (0.0, 0.0, 0.0) in
+  List.iter
+    (fun (v1, v2, v3) ->
+      let e1 = vec3_sub vertices.(v2) vertices.(v1) in
+      let e2 = vec3_sub vertices.(v3) vertices.(v1) in
+      let n = vec3_cross e1 e2 in
+      normals.(v1) <- vec3_add n normals.(v1);
+      normals.(v2) <- vec3_add n normals.(v2);
+      normals.(v3) <- vec3_add n normals.(v3))
+    faces;
 
   (vertices, faces, normals)
 
@@ -56,19 +53,19 @@ let render_obj obj =
   let vertices, faces, normals = obj in
   let draw_face face =
     let v1, v2, v3 = face in
-    GlDraw.normal3 @@ Array.get normals v1;
-    GlDraw.vertex3 @@ Array.get vertices v1;
-    GlDraw.normal3 @@ Array.get normals v2;
-    GlDraw.vertex3 @@ Array.get vertices v2;
-    GlDraw.normal3 @@ Array.get normals v3;
-    GlDraw.vertex3 @@ Array.get vertices v3
+    GlDraw.normal3 normals.(v1);
+    GlDraw.vertex3 vertices.(v1);
+    GlDraw.normal3 normals.(v2);
+    GlDraw.vertex3 vertices.(v2);
+    GlDraw.normal3 normals.(v3);
+    GlDraw.vertex3 vertices.(v3)
   in
   GlDraw.begins `triangles;
   List.iter draw_face faces;
   GlDraw.ends ()
 
 let _ =
-  let obj_name = Array.get Sys.argv 1 in
+  let obj_name = Sys.argv.(1) in
   let obj_data =
     let in_ch = open_in obj_name in
     really_input_string in_ch (in_channel_length in_ch)
