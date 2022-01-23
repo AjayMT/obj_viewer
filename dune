@@ -1,0 +1,3 @@
+(executable
+ (name obj_viewer)
+ (libraries lablgl lablgl.glut str))
