@@ -47,7 +47,7 @@ let read_obj obj_data =
       normals.(v3) <- vec3_add n normals.(v3))
     faces;
 
-  (vertices, faces, normals)
+  (vertices, faces, Array.map vec3_normalize normals)
 
 let render_obj obj =
   let vertices, faces, normals = obj in
