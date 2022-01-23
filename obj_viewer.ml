@@ -14,17 +14,18 @@ let read_obj obj_data =
     List.map (Str.split (Str.regexp "[ \n\r\x0c\t]+"))
     @@ Str.split (Str.regexp "[\n\r]+") obj_data
   in
-  let vertex_lines = List.filter (fun s -> List.nth s 0 = "v") lines in
-  let face_lines = List.filter (fun s -> List.nth s 0 = "f") lines in
+  let vertex_lines = List.filter (fun s -> List.hd s = "v") lines in
+  let face_lines = List.filter (fun s -> List.hd s = "f") lines in
 
   let vertices =
-    List.map
-      (fun line ->
-        let nums = List.tl line in
-        ( float_of_string @@ List.nth nums 0,
-          float_of_string @@ List.nth nums 1,
-          float_of_string @@ List.nth nums 2 ))
-      vertex_lines
+    Array.of_list
+    @@ List.map
+         (fun line ->
+           let nums = List.tl line in
+           ( float_of_string @@ List.nth nums 0,
+             float_of_string @@ List.nth nums 1,
+             float_of_string @@ List.nth nums 2 ))
+         vertex_lines
   in
 
   let faces =
@@ -38,18 +39,18 @@ let read_obj obj_data =
   let normals =
     List.fold_left
       (fun normals (v1, v2, v3) ->
-        let v1_coords = List.nth vertices v1 in
-        let e1 = vec3_sub (List.nth vertices v2) v1_coords in
-        let e2 = vec3_sub (List.nth vertices v3) v1_coords in
+        let v1_coords = Array.get vertices v1 in
+        let e1 = vec3_sub (Array.get vertices v2) v1_coords in
+        let e2 = vec3_sub (Array.get vertices v3) v1_coords in
         let n = vec3_cross e1 e2 in
         Array.mapi
           (fun i v -> if i = v1 || i = v2 || i = v3 then vec3_add n v else v)
           normals)
-      (Array.make (List.length vertices) (0.0, 0.0, 0.0))
+      (Array.make (Array.length vertices) (0.0, 0.0, 0.0))
       faces
   in
 
-  (Array.of_list vertices, faces, normals)
+  (vertices, faces, normals)
 
 let render_obj obj =
   let vertices, faces, normals = obj in
