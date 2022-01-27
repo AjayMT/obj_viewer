@@ -1,3 +1,8 @@
 (executable
  (name obj_viewer)
- (libraries lablgl lablgl.glut str))
+ (libraries lablgl lablgl.glut str)
+ (preprocess
+  (pps ppx_blob))
+ (preprocessor_deps
+  (file shader.frag)
+  (file shader.vert)))

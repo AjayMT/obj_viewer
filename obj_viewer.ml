@@ -77,17 +77,24 @@ let _ =
   ignore @@ Glut.init ~argv:Sys.argv;
   ignore @@ Glut.createWindow ~title:"hello world";
 
-  let light_ambient = (1.0, 1.0, 1.0, 1.0) in
-  let light_diffuse = (1.0, 1.0, 1.0, 1.0) in
-  let light_specular = (1.0, 1.0, 1.0, 1.0) in
-  let light_position = (5.0, 5.0, 5.0, 0.0) in
-  GlLight.light ~num:0 (`ambient light_ambient);
-  GlLight.light ~num:0 (`diffuse light_diffuse);
-  GlLight.light ~num:0 (`specular light_specular);
+  let light_position = (0.0, 5.0, 5.0, 1.0) in
   GlLight.light ~num:0 (`position light_position);
 
-  GlFunc.depth_func `less;
-  List.iter Gl.enable [ `lighting; `light0; `depth_test ];
+  let vert_shader = GlShader.create ~shader_type:`vertex_shader in
+  GlShader.source ~shader:vert_shader [%blob "shader.vert"];
+  GlShader.compile ~shader:vert_shader;
+
+  let frag_shader = GlShader.create ~shader_type:`fragment_shader in
+  GlShader.source ~shader:frag_shader [%blob "shader.frag"];
+  GlShader.compile ~shader:frag_shader;
+
+  let shader_program = GlShader.create_program () in
+  GlShader.attach ~program:shader_program ~shader:frag_shader;
+  GlShader.attach ~program:shader_program ~shader:vert_shader;
+  GlShader.link_program ~program:shader_program;
+  GlShader.use_program ~program:shader_program;
+
+  Gl.enable `depth_test;
 
   let x_angle = ref 0.0 in
   let y_angle = ref 0.0 in
@@ -138,14 +145,14 @@ let _ =
         ~aspect:(float_of_int w /. float_of_int h)
         ~z:(0.1, 500.0);
       GluMat.look_at ~eye:(0.0, 0.0, 10.0) ~center:(0.0, 0.0, 0.0)
-        ~up:(0.0, 1.0, 0.0);
-      GlMat.mode `modelview;
-      GlMat.load_identity ());
+        ~up:(0.0, 1.0, 0.0));
 
   Glut.displayFunc ~cb:(fun () ->
       GlClear.color (0.0, 0.0, 0.0);
       GlClear.clear [ `color; `depth ];
 
+      GlMat.mode `modelview;
+      GlMat.load_identity ();
       GlMat.push ();
       GlMat.translate ~z:!z_shift ();
       GlMat.rotate ~angle:!x_angle ~x:1.0 ();

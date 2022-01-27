@@ -1,5 +1,5 @@
 
-# obj_viewer
+# obj\_viewer
 WIP .obj file viewer.
 
 ## Build
@@ -7,6 +7,7 @@ Requirements:
 - [OCaml](https://ocaml.org)
 - [Dune](https://dune.build)
 - [LablGL](https://github.com/garrigue/lablgl) (`opam install lablgl`)
+- [ppx\_blob](https://github.com/johnwhitington/ppx_blob) (`opam install ppx_blob`)
 
 ```
 dune build
